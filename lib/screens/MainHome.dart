@@ -26,8 +26,9 @@ class _MainHomeState extends State<MainHome> {
 
   Future<void> googleSignOut() async {
     authProvider.googleSignOut();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+        LoginPage()), (Route<dynamic> route) => false);
+
   }
   @override
   void initState() {

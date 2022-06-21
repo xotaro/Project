@@ -48,8 +48,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> googleSignOut() async {
     authProvider.googleSignOut();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const LoginPage()));
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
+        LoginPage()), (Route<dynamic> route) => false);
   }
 
   Future<bool> onBackPress() {
