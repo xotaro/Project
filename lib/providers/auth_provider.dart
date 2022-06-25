@@ -74,6 +74,7 @@ class AuthProvider extends ChangeNotifier {
             FirestoreConstants.displayName: firebaseUser.displayName,
             FirestoreConstants.photoUrl: firebaseUser.photoURL,
             FirestoreConstants.id: firebaseUser.uid,
+            FirestoreConstants.status: 'Normal',
             "createdAt: ": DateTime.now().millisecondsSinceEpoch.toString(),
             FirestoreConstants.chattingWith: null
           });
@@ -86,6 +87,8 @@ class AuthProvider extends ChangeNotifier {
               FirestoreConstants.photoUrl, currentUser.photoURL ?? "");
           await prefs.setString(
               FirestoreConstants.phoneNumber, currentUser.phoneNumber ?? "");
+          await prefs.setString(
+              FirestoreConstants.status, "Normal");
         } else {
           DocumentSnapshot documentSnapshot = document[0];
           ChatUser userChat = ChatUser.fromDocument(documentSnapshot);

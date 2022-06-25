@@ -503,7 +503,10 @@ class _ChatPageState extends State<ChatPage> {
                         reverse: true,
                         controller: scrollController,
                         itemBuilder: (context, index) =>
-                            buildItem(index, snapshot.data?.docs[index]));
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 5.0),
+                              child: buildItem(index, snapshot.data?.docs[index]),
+                            ));
                   } else {
                     return const Center(
                       child: Text('No messages...'),

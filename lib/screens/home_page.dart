@@ -12,6 +12,7 @@ import '../allConstants/size_constants.dart';
 import '../allConstants/text_field_constants.dart';
 
 import '../allWidgets/loading_view.dart';
+import '../group_chats/group_chat_screen.dart';
 import '../models/chat_user.dart';
 import '../providers/auth_provider.dart';
 
@@ -166,7 +167,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Color.fromRGBO(36, 36, 62, 1),
         appBar: AppBar(
           centerTitle: true,
-          title: const Text('Adaptive'),
+          title: const Text('Hear Me'),
           actions: [
             IconButton(
                 onPressed: () => googleSignOut(),
@@ -228,7 +229,16 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-        ));
+        ),
+        floatingActionButton: FloatingActionButton(
+    child: Icon(Icons.group),
+    onPressed: () => Navigator.of(context).push(
+    MaterialPageRoute(
+    builder: (_) => GroupChatHomeScreen(),
+    ),
+    ),
+    ),
+    );
   }
 
   Widget buildSearchBar() {

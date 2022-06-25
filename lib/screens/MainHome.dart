@@ -49,7 +49,7 @@ class _MainHomeState extends State<MainHome> {
       backgroundColor: Color.fromRGBO(36, 36, 62, 1),
       appBar: AppBar(
           centerTitle: true,
-          title: const Text('Adaptive'),
+          title: const Text('Hear Me'),
           actions: [
             IconButton(
                 onPressed: () => googleSignOut(),
@@ -131,40 +131,6 @@ class _MainHomeState extends State<MainHome> {
               showImage: true,
               image:
               Image.asset('assets/img1.png', width: 110, height: 110),
-            ),
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => categoriesState(personType2),
-                ),
-              );
-            },
-            child: GFCard(
-              color: Color(0xFF713094),
-              clipBehavior: Clip.antiAlias,
-              padding: EdgeInsets.all(3),
-              elevation: 3,
-              height: 195,
-              boxFit: BoxFit.cover,
-              //showOverlayImage: true,
-              //imageOverlay: AssetImage('assets/img.jpg'),
-
-              title: GFListTile(
-                title: Center(
-                  child: Text(
-                    'Words to Sign language',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 23),
-                  ),
-                ),
-              ),
-              showImage: true,
-              image: Image.asset('assets/img.png', width: 110, height: 110),
             ),
           ),
 
