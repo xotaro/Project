@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:tflite/tflite.dart';
 
 import '../allConstants/color_constants.dart';
 import '../allConstants/firestore_constants.dart';
@@ -75,7 +76,15 @@ class _GroupChatRoomState extends State<GroupChatRoom> {
       Fluttertoast.showToast(msg: e.message ?? e.toString());
     }
   }
-
+  Future pickImage()
+  async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    File image=File(pickedFile!.path);
+    imageClassification(image);
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -83,8 +92,37 @@ class _GroupChatRoomState extends State<GroupChatRoom> {
     chatProvider = context.read<ChatProvider>();
     scrollController.addListener(_scrollListener);
     _speech = stt.SpeechToText();
+    loadModel();
 
 }
+  Future loadModel()
+  async {
+    Tflite.close();
+    String res;
+    res=(await Tflite.loadModel(model: "assets/model.tflite",labels: "assets/labels.txt"))!;
+    print("Models loading status: $res");
+  }
+  Future imageClassification(File image)
+  async {
+    final List? recognitions = await Tflite.runModelOnImage(
+      path: image.path,
+      numResults: 6,
+      threshold: 0.05,
+      imageMean: 127.5,
+      imageStd: 127.5,
+    );
+    setState(() {
+      print(recognitions);
+      recognitions!.forEach((e)
+      {
+        _message.text =
+            _message.text + '${e['label']}';
+        _message.selection = TextSelection.fromPosition(TextPosition(offset: _message.text.length));
+
+      });
+
+    });
+  }
   final FocusNode focusNode = FocusNode();
   bool _isListening = false;
   final TextEditingController textEditingController = TextEditingController();
@@ -409,21 +447,42 @@ class _GroupChatRoomState extends State<GroupChatRoom> {
       height: 50,
       child: Row(
         children: [
-          Container(
-            margin:  EdgeInsets.only(right: Sizes.dimen_4),
-            decoration: BoxDecoration(
-              color: AppColors.burgundy,
-              borderRadius: BorderRadius.circular(Sizes.dimen_30),
-            ),
-            child: IconButton(
-              onPressed: getImage,
-              icon: const Icon(
-                Icons.camera_alt,
-                size: Sizes.dimen_28,
+          Wrap(
+            direction: Axis.vertical,
+            children: [
+              Container(
+                  margin:  EdgeInsets.only(right: Sizes.dimen_4),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(Sizes.dimen_30),
+                  ),
+                  child: InkWell(
+                    onTap: pickImage,
+                    child: CircleAvatar(
+                      backgroundColor: Color(0xff0570f7),
+                      child: Image.asset("assets/icon_model.png",fit: BoxFit.fill,),
+                    ),
+                  )
               ),
-              color: AppColors.white,
-            ),
+              Container(
+                margin:  EdgeInsets.only(right: Sizes.dimen_4),
+                decoration: BoxDecoration(
+                  color: AppColors.burgundy,
+                  borderRadius: BorderRadius.circular(Sizes.dimen_30),
+                ),
+                child: IconButton(
+                  onPressed: getImage,
+                  icon: const Icon(
+                    Icons.camera_alt,
+                    size: Sizes.dimen_28,
+                  ),
+                  color: AppColors.white,
+                ),
+              ),
+
+            ],
           ),
+
           Tooltip(
             message: 'press again to stop',
             child: IconButton(
@@ -443,8 +502,12 @@ class _GroupChatRoomState extends State<GroupChatRoom> {
                 keyboardType: TextInputType.text,
                 textCapitalization: TextCapitalization.sentences,
                 controller: _message,
-                decoration:
-                kTextInputDecoration.copyWith(hintText: 'write here...'),
+                decoration:  InputDecoration(
+                    hintText: 'Write text ...',
+                    fillColor: Colors.grey[400],
+                    enabled: true,
+                    filled: true
+                ),
                 onSubmitted: (value) {
                   onSendMessage();
                 },
