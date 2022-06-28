@@ -59,6 +59,7 @@ dependencies:
   flutter_onboarding_screen: ^2.0.2
   getwidget: ^2.0.4
   uuid: ^3.0.4
+  tflite: ^1.1.2
 
 dev_dependencies:
   flutter_test:

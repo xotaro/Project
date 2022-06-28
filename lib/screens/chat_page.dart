@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tflite/tflite.dart';
 import '../allConstants/color_constants.dart';
 import '../allConstants/firestore_constants.dart';
 import '../allConstants/size_constants.dart';
@@ -71,7 +73,36 @@ class _ChatPageState extends State<ChatPage> {
     scrollController.addListener(_scrollListener);
     readLocal();
     _speech = stt.SpeechToText();
+    loadModel();
 
+  }
+  Future loadModel()
+  async {
+    Tflite.close();
+    String res;
+    res=(await Tflite.loadModel(model: "assets/model.tflite",labels: "assets/labels.txt"))!;
+    print("Models loading status: $res");
+  }
+  Future imageClassification(File image)
+  async {
+    final List? recognitions = await Tflite.runModelOnImage(
+      path: image.path,
+      numResults: 6,
+      threshold: 0.05,
+      imageMean: 127.5,
+      imageStd: 127.5,
+    );
+    setState(() {
+      print(recognitions);
+      recognitions!.forEach((e)
+      {
+        textEditingController.text =
+            textEditingController.text + '${e['label']}';
+        textEditingController.selection = TextSelection.fromPosition(TextPosition(offset: textEditingController.text.length));
+
+      });
+
+    });
   }
   void _listen() async {
     if (!_isListening) {
@@ -85,6 +116,8 @@ class _ChatPageState extends State<ChatPage> {
           listenFor: Duration(milliseconds: 60000),
           onResult: (val) => setState(() {
             textEditingController.text = val.recognizedWords;
+            textEditingController.selection = TextSelection.fromPosition(TextPosition(offset: textEditingController.text.length));
+
             if (val.hasConfidenceRating && val.confidence > 0) {
             }
           }),
@@ -143,6 +176,15 @@ class _ChatPageState extends State<ChatPage> {
         uploadImageFile();
       }
     }
+  }
+  Future pickImage()
+  async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    File image=File(pickedFile!.path);
+    imageClassification(image);
   }
 
   void getSticker() {
@@ -249,20 +291,40 @@ class _ChatPageState extends State<ChatPage> {
       height: 50,
       child: Row(
         children: [
-          Container(
-            margin:  EdgeInsets.only(right: Sizes.dimen_4),
-            decoration: BoxDecoration(
-              color: AppColors.burgundy,
-              borderRadius: BorderRadius.circular(Sizes.dimen_30),
-            ),
-            child: IconButton(
-              onPressed: getImage,
-              icon: const Icon(
-                Icons.camera_alt,
-                size: Sizes.dimen_28,
+          Wrap(
+            direction: Axis.vertical,
+            children: [
+              Container(
+                margin:  EdgeInsets.only(right: Sizes.dimen_4),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(Sizes.dimen_30),
+                ),
+                child: InkWell(
+                  onTap: pickImage,
+                  child: CircleAvatar(
+                    backgroundColor: Color(0xff0570f7),
+                    child: Image.asset("assets/icon_model.png",fit: BoxFit.fill,),
+                  ),
+                )
               ),
-              color: AppColors.white,
-            ),
+              Container(
+                margin:  EdgeInsets.only(right: Sizes.dimen_4),
+                decoration: BoxDecoration(
+                  color: AppColors.burgundy,
+                  borderRadius: BorderRadius.circular(Sizes.dimen_30),
+                ),
+                child: IconButton(
+                  onPressed: getImage,
+                  icon: const Icon(
+                    Icons.camera_alt,
+                    size: Sizes.dimen_28,
+                  ),
+                  color: AppColors.white,
+                ),
+              ),
+
+            ],
           ),
           Tooltip(
             message: 'press again to stop',
@@ -283,8 +345,13 @@ class _ChatPageState extends State<ChatPage> {
             keyboardType: TextInputType.text,
             textCapitalization: TextCapitalization.sentences,
             controller: textEditingController,
-            decoration:
-                kTextInputDecoration.copyWith(hintText: 'write here...'),
+            decoration:  InputDecoration(
+              hintText: 'Write text ...',
+              fillColor: Colors.grey[400],
+              enabled: true,
+              filled: true
+            ),
+
             onSubmitted: (value) {
               onSendMessage(textEditingController.text, MessageType.text);
             },
